@@ -4,6 +4,9 @@ import {app} from "../firebaseConfig"
 import {getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup} from "firebase/auth"
 import { useState } from "react";
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+
+
 
 export default function Register(){
     const auth = getAuth();
@@ -14,18 +17,13 @@ export default function Register(){
 
     const signUp = () => {
         createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            // Signed in 
-            router.push("/home")
-            const user = userCredential.user;
-            // ...
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            // ..
-        });
+            .then((response) => {
+                console.log(response.user)
+                sessionStorage.setItem('Token', response.user.accessToken);
+                router.push('/home')
+            })
     }
+
 
     const signUpWithGoogle = () => {
         signInWithPopup(auth, googleProvider)
@@ -35,6 +33,14 @@ export default function Register(){
                 router.push('/home')
             })
     }
+
+    useEffect(() => {
+        let token = sessionStorage.getItem('Token')
+
+        if(token){
+            router.push('/home')
+        }
+    }, [])
 
 
 
