@@ -2,11 +2,11 @@
 import { useEffect, useState } from "react"
 import {app, database} from "../firebaseConfig"
 import { useRouter } from "next/router"
-import {collection, addDoc} from "firebase/firestore"
+import {collection, addDoc, getDocs} from "firebase/firestore"
 
 export default function Home() {
   const [name, setName] = useState("");
-  const [age, setAge] = useState("");
+  const [age, setAge] = useState(null);
   const databaseRef = collection(database,'CRUD Data')
   let router = useRouter()
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function Home() {
     }
   }, [])
 
-  const addData = () => {
+  const addData = () => { 
     addDoc(databaseRef, {
       name: name,
       age: Number(age)
@@ -32,6 +32,15 @@ export default function Home() {
       })
       .catch((err) => {
         console.error(err);
+      })
+  }
+
+  const getData = async () => {
+    await getDocs(databaseRef)
+      .then((response) => {
+        setFireData(response.docs.map((data) => {
+          return { ...data.data(), id: data.id }
+        }))
       })
   }
 
