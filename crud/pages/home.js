@@ -2,11 +2,14 @@
 import { useEffect, useState } from "react"
 import {app, database} from "../firebaseConfig"
 import { useRouter } from "next/router"
-import {collection, addDoc, getDocs} from "firebase/firestore"
+import {collection, addDoc, getDocs, doc, updateDoc} from "firebase/firestore"
 
 export default function Home() {
+  const [ID, setID] = useState(null);
   const [name, setName] = useState("");
   const [age, setAge] = useState(null);
+  const [fireData, setFireData] = useState([]);
+  const [isUpdate, setIsUpdate] = useState(false)
   const databaseRef = collection(database,'CRUD Data')
   let router = useRouter()
   useEffect(() => {
@@ -38,10 +41,35 @@ export default function Home() {
   const getData = async () => {
     await getDocs(databaseRef)
       .then((response) => {
-        setFireData(response.docs.map((data) => {
-          return { ...data.data(), id: data.id }
+        setFireData(response.docs.map((data) => { 
+        return { ...data.data(), id: data.id }
         }))
       })
+  }
+  
+  const getID = (id, name, age) => {
+    setID(id)
+    setName(name)
+    setAge(age)
+    setIsUpdate(true)
+  }
+
+  const updateFields = () => {
+    let fieldToEdit = doc(database, 'CRUD Data', ID);
+    updateDoc(fieldToEdit, {
+      name: name,
+      age: Number(age)
+    })
+    .then(() => {
+      alert('Data Updated')
+      getData()
+      setName('')
+      setAge(null)
+      setIsUpdate(false)
+    })
+    .catch((err) => {
+      console.log(err);
+    })
   }
 
 
@@ -61,10 +89,35 @@ export default function Home() {
     value={age}
     onChange={event => setAge(event.target.value)}
     />
-    <button
-    onClick={addData}
+       {isUpdate ? (
+          <button
+            onClick={updateFields}
+          >
+            UPDATE
+          </button>
+        ) : (
+          <button
+            onClick={addData}
+          >
+            ADD
+          </button>
+        )}
 
-    >Add</button>
+
+          <div>
+          {fireData.map((data) => {
+            return (
+              <div>
+                <h3>Name: {data.name}</h3>
+                <p>Age: {data.age}</p>
+                <button
+                onClick={updateFields}
+
+                >Update</button>
+              </div>
+            )
+          })}
+        </div>
    </div>
   )
 }
