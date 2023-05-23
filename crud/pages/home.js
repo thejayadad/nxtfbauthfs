@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import {app, database} from "../firebaseConfig"
 import { useRouter } from "next/router"
-import {collection, addDoc, getDocs, doc, updateDoc} from "firebase/firestore"
+import {collection, addDoc, getDocs, doc, updateDoc, deleteDoc} from "firebase/firestore"
 
 export default function Home() {
   const [ID, setID] = useState(null);
@@ -72,10 +72,27 @@ export default function Home() {
     })
   }
 
+  const deleteDocument = (id) => {
+    let fieldToEdit = doc(database, 'CRUD Data', id);
+    deleteDoc(fieldToEdit)
+    .then(() => {
+      alert('Data Deleted')
+      getData()
+    })
+    .catch((err) => {
+      alert('Cannot Delete that field..')
+    })
+  }
+
+  const logout = () => {
+    sessionStorage.removeItem('Token')
+    router.push('/register')
+  }
 
   return (
    <div>
     <h2>Home Screen</h2>
+    <button onClick={logout}>Logout</button>
     <input
       placeholder="Name"
       type="text"
@@ -111,9 +128,12 @@ export default function Home() {
                 <h3>Name: {data.name}</h3>
                 <p>Age: {data.age}</p>
                 <button
-                onClick={updateFields}
+                onClick={() => getID(data.id, data.name, data.age)}
 
                 >Update</button>
+                  <button
+                  onClick={() => deleteDocument(data.id)}
+                >Delete</button>
               </div>
             )
           })}
